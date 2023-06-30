@@ -5,10 +5,12 @@ import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
+from options import parse_arguments
+args = parse_arguments()
 
 def get_train_dataloader(train_dir, batch_size, num_workers):
     data_transform = transforms.Compose([
-        transforms.Resize(size=(64, 64)),
+        transforms.Resize(size=(args.load_size, args.load_size)),
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.ToTensor()
     ])
@@ -27,7 +29,7 @@ def get_train_dataloader(train_dir, batch_size, num_workers):
 
 def get_test_dataloader(test_dir, batch_size, num_workers):
     data_transform = transforms.Compose([
-        transforms.Resize(size=(64, 64)),
+        transforms.Resize(size=(args.load_size, args.load_size)),
         transforms.ToTensor()
     ])
 
@@ -42,8 +44,11 @@ def get_test_dataloader(test_dir, batch_size, num_workers):
     return test_dataloader
 
 
-def create_data_loaders(train_dir, test_dir, batch_size):
-    train_loader = get_train_dataloader(train_dir, batch_size, num_workers=1)
-    test_loader = get_test_dataloader(test_dir, batch_size, num_workers=1)
+def create_data_loaders(data_dir, batch_size, num_workers=0):
+    train_dir = os.path.join(data_dir, "Train")
+    test_dir = os.path.join(data_dir, "Test")
+
+    train_loader = get_train_dataloader(train_dir, batch_size, num_workers)
+    test_loader = get_test_dataloader(test_dir, batch_size, num_workers)
 
     return train_loader, test_loader
