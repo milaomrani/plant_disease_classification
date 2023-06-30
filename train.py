@@ -1,8 +1,10 @@
 import torch
 from dataLoader import get_train_dataloader, get_test_dataloader
-from model import TinyVgg
+from model import TinyVgg, ImageNetModel
 from options import parse_arguments
+from utils import save_model
 from timeit import default_timer as timer 
+
 
 
 def train(model, train_dataloader, test_dataloader, optimizer, loss_fn, num_epochs, device):
@@ -30,6 +32,14 @@ def train(model, train_dataloader, test_dataloader, optimizer, loss_fn, num_epoc
         test_loss, test_acc = evaluate(model, test_dataloader, loss_fn, device)
         print(f'Test Loss: {test_loss:.4f} | '
               f'Test Acc: {test_acc:.4f}')
+
+        
+        # save_model(model=model,
+        #                target_dir=args.model_path,
+        #                model_name= f"models_{epoch}")
+        
+        torch.save(model.state_dict(), args.model_path)
+
         print('---------------------------------------')
 
 def evaluate(model, dataloader, loss_fn, device):
@@ -57,7 +67,10 @@ if __name__ == '__main__':
     train_dataloader = get_train_dataloader(args.train_dir, args.batch_size, 1)
     test_dataloader = get_test_dataloader(args.test_dir, args.batch_size, 1)
 
-    model = TinyVgg(input_shape=3, hidden_units=args.hidden_units, output_shape=len(train_dataloader.dataset.classes)).to(device)
+    if args.model == "ImageNet":
+        model = ImageNetModel(output_shape=len(train_dataloader.dataset.classes)).to(device)
+    else:
+        model = TinyVgg(input_shape=3, hidden_units=args.hidden_units, output_shape=len(train_dataloader.dataset.classes)).to(device)
 
     loss_fn = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(params=model.parameters(), lr=args.lr)
